@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AdvertiseX</title>
+    <!-- Include Prebid.js library -->
+    <script src="/node_modules/prebid.js/build/dist/prebid.js"></script>
+    <link href="./src/output.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Header -->
+    <h1 class="text-center font-bold text-lg mb-3">AdvertiseX</h1>
+    <!-- Wrapper for ad -->
+    <div id="advertisex-block"></div>
+        <script>
+        // Set timeout for bid requests
+        var PREBID_TIMEOUT = 1000;
+
+        // Define ad units
+        var adUnits = [{
+            code: 'advertisex-block',
+            mediaTypes: {
+                banner: {
+                    sizes: [[300, 250]]
+                }
+            },
+            bids: [{
+                bidder: 'advertisex',
+                params: {
+                    adUnitCode: '123qwe' // Example ad unit code
+                }
+            }]
+        }];
+
+        var pbjs = pbjs || {};
+        pbjs.que = pbjs.que || [];
+
+        // Queue the request to Prebid.js
+        pbjs.que.push(function() {
+            // Add ad units
+            pbjs.addAdUnits(adUnits);
+            // Request bids
+            pbjs.requestBids({
+                timeout: PREBID_TIMEOUT,
+                bidsBackHandler: initAdserver
+            });
+        });
+
+        // Function to handle bid responses
+        function initAdserver(bidResponses) {
+
+            // Iterate over each ad unit response
+            let bidResponse = {};
+
+            for (let repsonse in bidResponses) {
+                const adUnitCode = repsonse;
+
+                if (bidResponses.hasOwnProperty(repsonse) && adUnitCode == 'advertisex-block') {
+                    bidResponse[repsonse] = bidResponses[repsonse];
+
+                    if(bidResponse[repsonse].bids.length) {
+                         const bidBlock = bidResponse[repsonse].bids[0];  
+        
+                        // Get the wrapper for bid
+                        const adDiv = document.getElementById(adUnitCode);
+                        if (adDiv) {
+                            pbjs.renderAd(adDiv, bidBlock.adId);
+       
+                            adDiv.innerHTML = bidBlock.ad;
+                        } else {
+                            console.error('The wrapper not found');
+                        }
+                    }
+                } else {
+                    console.error('No valid bids received for AdvertiseX');
+                }
+            }
+        }
+    </script>
+</body>
+</html>
